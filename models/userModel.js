@@ -41,7 +41,12 @@ const userSchema = mongoose.Schema({
 	},
 	passwordChangedAt: Date,
 	passwordResetToken: String,
-	passwordResetExpires: Date
+	passwordResetExpires: Date,
+	active: {
+		type: Boolean,
+		default: true,
+		select: false
+	}
 })
 
 userSchema.pre('save', async function(next) {
@@ -61,6 +66,12 @@ userSchema.pre('save', function(next) {
 
 	this.passwordChangedAt = Date.now() - 1000 // 有时jwt颁发的时间要早于此处执行时间，因此稍微减掉一点，保证jwt颁发晚于password change
 
+	next()
+})
+
+userSchema.pre(/^find/, function(next) {
+	// this points to current query
+	this.find({ active: { $ne: false } })
 	next()
 })
 

@@ -14,6 +14,18 @@ const signToken = id => {
 
 const createAndSendToken = (user, statusCode, res) => {
 	const token = signToken(user._id)
+
+	const cookieOptions = {
+		expires: new Date(
+			Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+		),
+		httpOnly: true
+	}
+
+	if (process.env.NODE_ENV === 'production') cookieOptions.secure = true // only send via https
+	res.cookie('jwt', token, cookieOptions)
+
+	user.password = undefined
 	res.status(statusCode).json({
 		status: 'success',
 		token,
@@ -70,7 +82,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 	}
 
 	// 2) Verification token
-	const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET) // 校验不对会抛出error
+	const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET) // 校验不对或超时会抛出error
 
 	// 3) Check if user still exists
 	const currentUser = await User.findById(decoded.id)
@@ -119,8 +131,7 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
 
 	// 2) Generate the random reset token
 	const resetToken = user.createPasswordResetToken()
-
-	await user.save()
+	await user.save({ validateBeforeSave: false }) // 可不传false，因为validator只对更新的部分校验
 
 	// 3) Send email
 	const resetURL = `${req.protocol}://${req.get(
@@ -143,7 +154,7 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
 	} catch (err) {
 		user.passwordResetToken = undefined
 		user.passwordResetExpires = undefined
-		await user.save({ validateBeforeSave: false })
+		await user.save({ validateBeforeSave: false }) // 可不传false，因为validator只对更新的部分校验
 
 		return next(
 			new AppError(
