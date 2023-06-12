@@ -1,6 +1,7 @@
 const express = require('express')
 const morgan = require('morgan')
 const rateLimit = require('express-rate-limit')
+const hpp = require('hpp')
 
 const AppError = require('./utils/appError')
 const globalErrorHandler = require('./controllers/errorController')
@@ -25,6 +26,20 @@ app.use('/api', limiter) // affect routes starts with /api
 // middleware, 解析JSON格式的请求body体，在route handler中可通过req.body访问请求body体。
 // 没有该中间件则req.body=undefined
 app.use(express.json())
+
+// Prevent HTTP Parameter Pollution
+app.use(
+	hpp({
+		whitelist: [
+			'duration',
+			'ratingsQuantity',
+			'ratingsAverage',
+			'maxGroupSize',
+			'difficulty',
+			'price'
+		]
+	})
+)
 
 // Serve static file
 app.use(express.static(`${__dirname}/public`))
