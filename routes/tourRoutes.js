@@ -2,9 +2,13 @@ const express = require('express')
 const tourController = require('../controllers/tourController')
 const authController = require('../controllers/authController')
 
+const reviewRouter = require('../routes/reviewRoutes')
+
 const router = express.Router() // a middleware, can be mounted on app. Basically it's a sub application
 
 // router.param('id', tourController.checkID);
+
+router.use('/:tourId/reviews', reviewRouter) // routes starts with /api/v1/tours/tourId/reviews will redirect to review router
 
 router
 	.route('/top-5-cheap')

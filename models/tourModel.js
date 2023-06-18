@@ -119,6 +119,13 @@ tourSchema.virtual('durationWeeks').get(function() {
 	return this.duration / 7
 })
 
+// Virtual Populate
+tourSchema.virtual('reviews', {
+	ref: 'Review',
+	foreignField: 'tour', // the field in other model
+	localField: '_id' // the field in current model that referenced by other field (equals to foreign field)
+})
+
 // DOCUMENT MIDDLEWARE: runs before .save() and .create() (not .insert)
 tourSchema.pre('save', function(next) {
 	// add some new property, should be defined in schema first
