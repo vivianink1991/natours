@@ -50,6 +50,7 @@ reviewSchema.pre(/^find/, function(next) {
 	next()
 })
 
+// functions on model
 reviewSchema.statics.calcAverageRatings = async function(tourId) {
 	// this points to model
 	const stats = await this.aggregate([
