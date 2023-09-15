@@ -86,7 +86,7 @@ const tourSchema = new mongoose.Schema(
 				default: 'Point',
 				enum: ['Point']
 			},
-			coordinates: [Number], // array of number, [latitude, longitude]
+			coordinates: [Number], // array of number, [longitude, latitude]
 			address: String,
 			description: String
 		},
@@ -119,6 +119,7 @@ const tourSchema = new mongoose.Schema(
 // tourSchema.index({ price: 1 }) // 1 for ascending order, -1 for descending order
 tourSchema.index({ price: 1, ratingsAverage: -1 }) // 1 for ascending order, -1 for descending order
 tourSchema.index({ slug: 1 })
+tourSchema.index({ startLocation: '2dsphere' })
 
 tourSchema.virtual('durationWeeks').get(function() {
 	return this.duration / 7
@@ -167,12 +168,12 @@ tourSchema.post(/^find/, function(docs, next) {
 })
 
 // AGGREGATION MIDDLEWARE
-tourSchema.pre('aggregate', function(next) {
-	this.pipeline().unshift({ $match: { secretTour: { $ne: true } } }) // this points to the aggregation object
+// tourSchema.pre('aggregate', function(next) {
+// 	this.pipeline().unshift({ $match: { secretTour: { $ne: true } } }) // this points to the aggregation object
 
-	console.log(this.pipeline())
-	next()
-})
+// 	console.log(this.pipeline())
+// 	next()
+// })
 
 const Tour = mongoose.model('Tour', tourSchema)
 
