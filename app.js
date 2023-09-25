@@ -21,6 +21,9 @@ app.set('views', path.join(__dirname, 'views'))
 
 // 1) GLOBAL MIDDLEWARES
 
+// Serve static file
+app.use(express.static(path.join(__dirname, 'public')))
+
 // Secure HTTP Headers
 app.use(helmet())
 
@@ -63,9 +66,6 @@ app.use(
 	})
 )
 
-// Serve static file
-app.use(express.static(path.join(__dirname, 'public')))
-
 // Test middleware
 app.use((req, res, next) => {
 	req.requestTime = new Date().toISOString()
@@ -73,6 +73,12 @@ app.use((req, res, next) => {
 })
 
 // 3) ROUTES
+app.use('/', (req, res) => {
+	res.status(200).render('base', {
+		tour: 'Hiking',
+		user: 'Akira'
+	})
+})
 app.use('/api/v1/tours', tourRouter)
 app.use('/api/v1/users', userRouter)
 app.use('/api/v1/reviews', reviewRouter)
